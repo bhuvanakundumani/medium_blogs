@@ -1,0 +1,92 @@
+This blog goes through the steps to connect to Snowflake from your Python applications securely using environment variables. We all know that hardcoding login credentials is very bad and it should be avoided at all costs. Hardcoded credentials give cyber attackers and hackers an easy way in.Let us see how we can use the environment variables to securely pass the login credentials in this blog in detail.
+What is an Environment variable ?
+An environment variable is a variable set outside of the program usually through the functionality built into the operating system. Basically an environment variable is a key-value pair (outside of your program) that resides in your local system. A .env file basically contains all the environment variables.
+Basic Usage
+Create a .env file at the root of the project.
+├── venv
+├── .env
+Pop your sensitive snowflake credentials into this file as shown below.
+NOTE : .env file should be ignored using .gitignore file when you are using git for version control. More information on how to do this is given below.
+SF_ACCOUNT    = <'snowflake_account_name'>
+SF_USER       = <'snowflake_username'>
+SF_WAREHOUSE  = <'warehouse_name'>
+SF_DATABASE   = <'database_name'>
+SF_SCHEMA     = <'schema_name'>
+SF_PASSWORD   = <'snowflake_password'>
+Using dotenv in our python program
+Reading environment variables is very easy using the package — python-dotenv. To install, run the command — pip install python-dotenv
+To load the environment variables, open a file name snowflake_connector.py and type the following commands as shown in the image.
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
+dotenv_path = join(dirname(__file__),'.env')
+load_dotenv(dotenv_path)
+ # Get the credentials from .env
+SF_ACCOUNT    = os.getenv('SF_ACCOUNT')
+SF_USER       = os.getenv('SF_USER')
+SF_WAREHOUSE  = os.getenv('SF_WAREHOUSE')
+SF_DATABASE   = os.getenv('SF_DATABASE')
+SF_SCHEMA     = os.getenv('SF_SCHEMA')
+SF_PASSWORD   = os.getenv('SF_PASSWORD')
+Snowflake connector for python
+Snowflake connector for python is available in PyPI. To install the connector, execute the following command:
+pip install — upgrade snowflake-connector-python
+(The Snowflake connector for Python requires Python 2.7.9 (or higher) or 3.5.0 (or higher))
+Connecting to Snowflake
+Import the snowflake.connector module using the command — import snowflake.connector. You can connect to Snowflake with the required login parameters using the the Default Authenticator.
+import snowflake.connector
+# fire up an instance of a snowflake connection
+connection = snowflake.connector.connect (
+account  = SF_ACCOUNT,
+user     = SF_USER,
+password = SF_PASSWORD,
+warehouse = SF_WAREHOUSE,
+database = SF_DATABASE,
+schema   = SF_SCHEMA)
+We have securely passed our credentials using .env file. We are ready to Create table in our database. The sample code creates a table test_table with two columns — col1 integer and col2 string.
+cs = connection.cursor()
+try:
+  cs.execute(    
+    "CREATE OR REPLACE TABLE "    
+    "test_table_1(col1 integer, col2 string)")
+except Exception as e:  
+  raise e
+finally:  
+  cs.close() 
+connection.close()
+We have established a connection securely with our Snowflake account using the connector for python.
+.gitignore for git
+If you are using git for version control, you should ignore this .env file in .gitignore file . Create a .gitignore file at the root of the project.
+├── venv
+├── .env
+├── .gitignore
+Add the following lines in .gitignore to avoid the venv, .env files in your git repository.
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+VENV/
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+pip-selfcheck.json
+
+# Ignore Mac DS_Store files
+.DS_Store
+
+# Ignore vscode files
+.vscode
+Please refer https://github.com/bhuvanakundumani/snowflake_connector for code.
+
+
+References:
+https://docs.snowflake.net/manuals/user-guide/python-connector.html
+https://robinislam.me/blog/reading-environment-variables-in-python/
+https://preslav.me/2019/01/09/dotenv-files-python/
